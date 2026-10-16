@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+
+<html class="dark scroll-smooth" lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CineLuxe - Hệ Thống Đặt Vé Xem Phim Trực Tuyến Đẳng Cấp</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Cinzel:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Lucide Icons CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            cinematic: ['Cinzel', 'serif'],
+          },
+          colors: {
+            brand: {
+              dark: '#09090b',
+              surface: 'rgba(24, 24, 27, 0.72)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              crimson: '#e11d48',
+              crimsonHover: '#be123c',
+              gold: '#f59e0b',
+              goldHover: '#d97706',
+              purple: '#8b5cf6',
+            }
+          },
+          animation: {
+            'pulse-glow': 'pulseGlow 2.5s infinite',
+            'screen-flicker': 'screenFlicker 4s infinite ease-in-out',
+            'laser-scan': 'laserScan 2.4s infinite ease-in-out',
+            'float': 'float 3s ease-in-out infinite',
+            'bounce-subtle': 'bounceSubtle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(225, 29, 72, 0.7)' },
+              '50%': { transform: 'scale(1.05)', boxShadow: '0 0 25px 10px rgba(225, 29, 72, 0)' },
+            },
+            screenFlicker: {
+              '0%, 100%': { opacity: '0.88', filter: 'brightness(1)' },
+              '25%': { opacity: '0.78', filter: 'brightness(0.92)' },
+              '45%': { opacity: '0.94', filter: 'brightness(1.08)' },
+              '70%': { opacity: '0.82', filter: 'brightness(0.96)' },
+              '85%': { opacity: '1', filter: 'brightness(1.1)' },
+            },
+            laserScan: {
+              '0%': { top: '0%' },
+              '50%': { top: '92%' },
+              '100%': { top: '0%' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-6px)' },
+            },
+            bounceSubtle: {
+              '0%': { transform: 'scale(0.85)' },
+              '60%': { transform: 'scale(1.15)' },
+              '100%': { transform: 'scale(1)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    /* Glassmorphism Classes */
+    .glass-nav {
+      background: rgba(9, 9, 11, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-panel {
+      background: rgba(24, 24, 27, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .glass-panel-elevated {
+      background: rgba(30, 30, 36, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Curved Screen 3D Effect */
+    .cinema-screen-curve {
+      height: 38px;
+      border-top: 5px solid #e11d48;
+      border-radius: 50% / 100% 100% 0 0;
+      box-shadow: 0 10px 45px 5px rgba(225, 29, 72, 0.45);
+      position: relative;
+    }
+    .cinema-beam {
+      background: radial-gradient(ellipse at 50% 0%, rgba(225, 29, 72, 0.22) 0%, rgba(245, 158, 11, 0.08) 40%, transparent 75%);
+      clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+    }
+
+    /* 3D Seat Styles */
+    .seat {
+      position: relative;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      user-select: none;
+    }
+    .seat:hover:not(.seat-booked) {
+      transform: translateY(-3px) scale(1.12);
+      filter: drop-shadow(0 4px 10px rgba(255, 255, 255, 0.3));
+    }
+    .seat-active {
+      transform: scale(1.1) !important;
+      background: #e11d48 !important;
+      border-color: #f43f5e !important;
+      color: #fff !important;
+      box-shadow: 0 0 16px 4px rgba(225, 29, 72, 0.75), inset 0 2px 4px rgba(255, 255, 255, 0.4) !important;
+      animation: bounceSubtle 0.35s ease-out;
+    }
+    .seat-booked {
+      background: #27272a !important;
+      border-color: #3f3f46 !important;
+      color: #52525b !important;
+      cursor: not-allowed !important;
+      opacity: 0.45;
+    }
+
+    /* 3D Ticket Flip Card */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="bg-[#09090b] text-zinc-100 min-h-screen font-sans selection:bg-rose-600 selection:text-white relative overflow-x-hidden">
+<!-- Ambient Light Accents -->
+<div class="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-rose-900/15 rounded-full blur-[140px] pointer-events-none z-0"></div>
+<div class="fixed top-[40%] right-[-10%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[160px] pointer-events-none z-0"></div>
+<div class="fixed bottom-[-10%] left-[30%] w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[150px] pointer-events-none z-0"></div>
+<!-- HEADER -->
+<header class="glass-nav sticky top-0 z-40 w-full transition-all duration-300">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+<!-- Brand Logo -->
+<a class="flex items-center gap-3 group" href="#">
+<div class="w-11 h-11 rounded-xl bg-gradient-to-br from-rose-600 via-rose-700 to-amber-600 flex items-center justify-center shadow-lg shadow-rose-900/40 group-hover:shadow-rose-600/60 transition-all duration-300 transform group-hover:scale-105 border border-white/20">
+<i class="w-6 h-6 text-white transform group-hover:rotate-12 transition-transform" data-lucide="clapperboard"></i>
+</div>
+<div class="flex flex-col">
+<span class="font-cinematic text-2xl font-extrabold tracking-wider bg-gradient-to-r from-white via-rose-200 to-amber-300 bg-clip-text text-transparent">CINELUXE</span>
+<span class="text-[10px] uppercase tracking-[0.25em] text-zinc-400 font-semibold -mt-1">Premier Cinema</span>
+</div>
+</a>
+<!-- Search Bar with Expansion Focus -->
+<div class="hidden md:flex flex-1 max-w-md mx-6 relative">
+<div class="relative w-full group">
+<i class="w-4 h-4 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors group-focus-within:text-rose-500" data-lucide="search"></i>
+<input class="w-full pl-11 pr-10 py-2.5 rounded-full bg-zinc-900/80 border border-zinc-700/60 text-sm placeholder-zinc-500 text-zinc-200 focus:outline-none focus:border-rose-500 focus:bg-zinc-900 focus:ring-2 focus:ring-rose-500/20 focus:w-[108%] -ml-[4%] transition-all duration-300" id="movieSearchInput" placeholder="Tìm kiếm phim, đạo diễn, rạp chiếu..." type="text"/>
+<kbd class="hidden lg:inline-block absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] bg-zinc-800 text-zinc-400 border border-zinc-700 rounded px-1.5 py-0.5">⌘K</kbd>
+</div>
+</div>
+<!-- Quick Nav & Actions -->
+<div class="flex items-center gap-3">
+<!-- Cinema Location Selector -->
+<div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-300 hover:border-zinc-700 cursor-pointer transition">
+<i class="w-3.5 h-3.5 text-rose-500" data-lucide="map-pin"></i>
+<span class="font-medium">CineLuxe Landmark 81</span>
+<i class="w-3 h-3 text-zinc-500" data-lucide="chevron-down"></i>
+</div>
+<!-- My Tickets Drawer Trigger -->
+<button class="relative flex items-center gap-2 px-4 py-2.5 rounded-full bg-zinc-800/80 hover:bg-zinc-700/80 border border-zinc-700/80 text-xs sm:text-sm font-semibold text-zinc-100 transition-all duration-300 hover:border-rose-500/50 shadow-sm" id="btnOpenMyTickets">
+<i class="w-4 h-4 text-rose-500" data-lucide="ticket"></i>
+<span>Vé của tôi</span>
+<span class="w-5 h-5 rounded-full bg-rose-600 text-[11px] font-bold text-white flex items-center justify-center shadow-md" id="ticketBadgeCount">1</span>
+</button>
+<!-- User Profile Avatar -->
+<div class="w-10 h-10 rounded-full ring-2 ring-rose-500/30 overflow-hidden cursor-pointer hover:ring-rose-500 transition">
+<img alt="Avatar" class="w-full h-full object-cover" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN CONTAINER -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16 relative z-10">
+<!-- HERO SECTION: BLOCKBUSTER SPOTLIGHT -->
+<section class="relative rounded-3xl overflow-hidden border border-white/10 glass-panel shadow-2xl">
+<!-- Hero Background Image & Gradient -->
+<div class="absolute inset-0 z-0">
+<img alt="Dune Part Two Spotlight" class="w-full h-full object-cover object-center filter brightness-[0.4] transition-all duration-700 transform scale-105" id="heroBackdrop" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/60 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/80 to-transparent"></div>
+</div>
+<div class="relative z-10 p-8 sm:p-12 lg:p-16 max-w-3xl flex flex-col justify-end min-h-[480px]">
+<!-- Badges -->
+<div class="flex flex-wrap items-center gap-2.5 mb-4">
+<span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-600/90 text-white shadow-lg shadow-rose-600/30">
+            ★ Phim Nổi Bật Tuần Này
+          </span>
+<span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+<i class="w-3 h-3 text-amber-400" data-lucide="sparkles"></i> IMAX 3D LASER
+          </span>
+<span class="px-2.5 py-1 rounded-md text-xs font-bold bg-zinc-800 text-zinc-300 border border-zinc-700">T16</span>
+<span class="text-xs text-zinc-400">166 Phút</span>
+</div>
+<!-- Movie Title -->
+<h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-4 leading-tight font-sans drop-shadow-md" id="heroTitle">
+          DUNE: HÀNH TINH CÁT 2
+        </h1>
+<!-- Short Description -->
+<p class="text-zinc-300 text-sm sm:text-base mb-6 line-clamp-3 leading-relaxed" id="heroDesc">
+          Paul Atreides hợp lực cùng Chani và tộc người Fremen để trả thù những kẻ đã hủy diệt gia tộc mình. Đứng trước sự lựa chọn giữa tình yêu của đời mình và vận mệnh của vũ trụ, Paul dấn thân vào cuộc chiến vĩ đại.
+        </p>
+<!-- CTAs -->
+<div class="flex flex-wrap items-center gap-4">
+<!-- Buy Ticket CTA scrolls directly to seat selector -->
+<a class="px-8 py-3.5 rounded-full bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-sm tracking-wide shadow-xl shadow-rose-900/50 hover:shadow-rose-600/60 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-2 group" href="#bookingSection" onclick="selectMovieForBooking(0)">
+<i class="w-4 h-4 group-hover:rotate-12 transition-transform" data-lucide="ticket"></i>
+<span>ĐẶT VÉ NGAY</span>
+</a>
+<!-- Watch Trailer with Pulse Glow -->
+<button class="relative px-6 py-3.5 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700 text-white font-semibold text-sm transition-all duration-300 flex items-center gap-2.5 animate-pulse-glow" onclick="openTrailerModal('Dune: Part Two')">
+<div class="w-6 h-6 rounded-full bg-rose-600/80 flex items-center justify-center">
+<i class="w-3.5 h-3.5 text-white fill-white ml-0.5" data-lucide="play"></i>
+</div>
+<span>Xem Trailer</span>
+</button>
+<!-- Movie Rating summary -->
+<div class="hidden sm:flex items-center gap-2 ml-4 pl-4 border-l border-zinc-700/80">
+<div class="text-amber-400 flex items-center">
+<i class="w-4 h-4 fill-amber-400" data-lucide="star"></i>
+</div>
+<div>
+<div class="text-sm font-bold text-white">8.9<span class="text-xs text-zinc-400 font-normal">/10</span></div>
+<div class="text-[10px] text-zinc-400">240.5K đánh giá</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- MOVIE CATALOG (4-Column Grid with Tabs) -->
+<section>
+<!-- Section Header & Filter Tabs -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+<div>
+<h2 class="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2.5">
+<i class="w-6 h-6 text-rose-500" data-lucide="film"></i>
+<span>Danh Sách Phim Chiếu Rạp</span>
+</h2>
+<p class="text-xs sm:text-sm text-zinc-400 mt-1">Chọn phim yêu thích để bắt đầu chọn phòng chiếu và đặt chỗ</p>
+</div>
+<!-- Filter Tabs -->
+<div class="flex items-center p-1 rounded-xl bg-zinc-900 border border-zinc-800 self-start sm:self-auto">
+<button class="tab-btn px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 bg-rose-600 text-white shadow-md shadow-rose-900/40" id="tabNowShowing" onclick="switchTab('now')">
+            Đang Chiếu (8)
+          </button>
+<button class="tab-btn px-5 py-2 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white transition-all duration-300" id="tabComingSoon" onclick="switchTab('soon')">
+            Sắp Chiếu (4)
+          </button>
+</div>
+</div>
+<!-- Movies Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="moviesGrid">
+<!-- Rendered via JavaScript -->
+</div>
+</section>
+<!-- INTERACTIVE SEAT MAP & BOOKING AREA (Trọng tâm) -->
+<section class="scroll-mt-24" id="bookingSection">
+<div class="glass-panel rounded-3xl p-6 sm:p-8 lg:p-10 border border-white/10 relative overflow-hidden">
+<!-- Section Title with Selected Movie Banner -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between pb-6 mb-8 border-b border-zinc-800/80 gap-4">
+<div>
+<div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-rose-500 mb-1">
+<span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+              Bước 2 / 3: Chọn Suất Chiếu &amp; Chỗ Ngồi
+            </div>
+<h3 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2" id="bookingMovieTitle">
+              Dune: Hành Tinh Cát 2
+            </h3>
+<div class="flex items-center gap-3 text-xs text-zinc-400 mt-1">
+<span class="text-amber-400 font-semibold" id="bookingFormat">IMAX 3D Phụ Đề</span>
+<span>•</span>
+<span id="bookingHall">Phòng chiếu 05 (VIP Laser)</span>
+</div>
+</div>
+<!-- Showtime & Date Picker -->
+<div class="flex flex-wrap items-center gap-2">
+<!-- Date selection chips -->
+<div class="flex items-center gap-2 mr-2">
+<button class="date-chip active px-3.5 py-1.5 rounded-lg text-xs font-bold bg-zinc-800 text-rose-400 border border-rose-500/50">
+                Hôm nay, 28/10
+              </button>
+<button class="date-chip px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 hover:border-zinc-700">
+                Thứ 4, 29/10
+              </button>
+<button class="date-chip px-3.5 py-1.5 rounded-lg text-xs font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 hover:border-zinc-700">
+                Thứ 5, 30/10
+              </button>
+</div>
+<!-- Showtime chips -->
+<div class="flex items-center gap-2" id="showtimeSelector">
+<button class="showtime-chip px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-md shadow-rose-900/30" onclick="selectShowtime(this, '18:30')">18:30</button>
+<button class="showtime-chip px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 bg-zinc-800 border border-zinc-700 hover:border-rose-500/40" onclick="selectShowtime(this, '20:15')">20:15</button>
+<button class="showtime-chip px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 bg-zinc-800 border border-zinc-700 hover:border-rose-500/40" onclick="selectShowtime(this, '22:00')">22:00</button>
+</div>
+</div>
+</div>
+<!-- THE CINEMA SCREEN (Curved with light beam) -->
+<div class="w-full max-w-4xl mx-auto mb-12 text-center relative">
+<!-- Curved Bar -->
+<div class="cinema-screen-curve w-4/5 mx-auto animate-screen-flicker"></div>
+<!-- Radiating Beam -->
+<div class="cinema-beam w-3/4 h-24 mx-auto -mt-3 pointer-events-none opacity-80"></div>
+<div class="text-[11px] uppercase tracking-[0.3em] font-semibold text-zinc-400 -mt-16 relative z-10 flex items-center justify-center gap-2">
+<i class="w-4 h-4 text-rose-500" data-lucide="projector"></i>
+            MÀN HÌNH CHIẾU CHÍNH (CINEMA SCREEN)
+          </div>
+</div>
+<!-- SEAT MATRIX CONTAINER (Rows A-H, Cols 1-10) -->
+<div class="w-full overflow-x-auto pb-6">
+<div class="min-w-[700px] max-w-3xl mx-auto flex flex-col items-center gap-3" id="seatMatrix">
+<!-- Seat matrix will be dynamically rendered via JavaScript -->
+</div>
+</div>
+<!-- SEAT LEGEND & PRICING -->
+<div class="max-w-2xl mx-auto mt-6 pt-6 border-t border-zinc-800/80 flex flex-wrap items-center justify-around gap-4 text-xs">
+<!-- Ghế thường -->
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-t-lg bg-zinc-700 border border-zinc-600 flex items-center justify-center text-[10px] text-zinc-300"></div>
+<div>
+<div class="font-bold text-zinc-200">Ghế Thường</div>
+<div class="text-[11px] text-zinc-400">95.000 đ</div>
+</div>
+</div>
+<!-- Ghế VIP -->
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-t-lg bg-zinc-800 border-2 border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.3)] flex items-center justify-center text-[10px] text-amber-400">★</div>
+<div>
+<div class="font-bold text-amber-400">Ghế VIP</div>
+<div class="text-[11px] text-zinc-400">125.000 đ</div>
+</div>
+</div>
+<!-- Ghế Sweetbox -->
+<div class="flex items-center gap-2">
+<div class="w-10 h-6 rounded-t-lg bg-gradient-to-r from-purple-800/80 to-pink-800/80 border border-pink-500/80 flex items-center justify-center text-[10px] text-pink-200">♥</div>
+<div>
+<div class="font-bold text-pink-400">Sweetbox Đôi</div>
+<div class="text-[11px] text-zinc-400">240.000 đ</div>
+</div>
+</div>
+<!-- Đang chọn -->
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-t-lg bg-rose-600 border border-rose-400 shadow-[0_0_10px_rgba(225,29,72,0.8)] flex items-center justify-center text-[10px] text-white font-bold">✓</div>
+<div class="font-bold text-rose-400">Đang chọn</div>
+</div>
+<!-- Đã bán -->
+<div class="flex items-center gap-2 opacity-50">
+<div class="w-6 h-6 rounded-t-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[10px] text-zinc-600">✕</div>
+<div class="font-medium text-zinc-500">Đã bán</div>
+</div>
+</div>
+<!-- CONCESSION & POPCORN COMBO SELECTION -->
+<div class="mt-12 pt-8 border-t border-zinc-800/80">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h4 class="text-lg font-bold text-white flex items-center gap-2">
+<i class="w-5 h-5 text-amber-400" data-lucide="popcorn"></i>
+                Combo Bắp Nước Ưu Đãi
+              </h4>
+<p class="text-xs text-zinc-400 mt-0.5">Tiết kiệm đến 25% khi đặt kèm vé trực tuyến</p>
+</div>
+<span class="text-xs text-amber-400 font-semibold bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">
+              Khuyên dùng
+            </span>
+</div>
+<!-- Combo horizontal cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="comboListContainer">
+<!-- Dynamically populated or static template -->
+</div>
+</div>
+</div>
+</section>
+<!-- CINEMA SERVICES & AMENITIES BANNER -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-panel p-6 rounded-2xl flex items-center gap-4 hover:border-zinc-700 transition">
+<div class="w-12 h-12 rounded-xl bg-rose-600/10 border border-rose-500/20 flex items-center justify-center text-rose-500">
+<i class="w-6 h-6" data-lucide="volume-2"></i>
+</div>
+<div>
+<h5 class="font-bold text-white text-sm">Dolby Atmos Sound</h5>
+<p class="text-xs text-zinc-400 mt-1">Âm thanh vòm đa chiều 64 kênh sống động</p>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-2xl flex items-center gap-4 hover:border-zinc-700 transition">
+<div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+<i class="w-6 h-6" data-lucide="sparkles"></i>
+</div>
+<div>
+<h5 class="font-bold text-white text-sm">Laser Projection 4K</h5>
+<p class="text-xs text-zinc-400 mt-1">Độ tương phản và độ sáng vượt trội</p>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-2xl flex items-center gap-4 hover:border-zinc-700 transition">
+<div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+<i class="w-6 h-6" data-lucide="shield-check"></i>
+</div>
+<div>
+<h5 class="font-bold text-white text-sm">Vé Điện Tử QR Code</h5>
+<p class="text-xs text-zinc-400 mt-1">Vào rạp không cần xếp hàng đổi vé giấy</p>
+</div>
+</div>
+</section>
+</main>
+<!-- STICKY CHECKOUT BAR (Thanh tổng kết hóa đơn cố định) -->
+<aside class="fixed bottom-0 left-0 right-0 z-30 glass-panel-elevated border-t border-white/10 px-4 py-3 sm:py-4 transition-transform duration-300">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+<!-- Selected Info Summary -->
+<div class="flex items-center gap-4 w-full sm:w-auto">
+<div class="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 overflow-hidden hidden sm:block shrink-0">
+<img alt="Thumb" class="w-full h-full object-cover" id="summaryThumb" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+</div>
+<div class="truncate">
+<div class="flex items-center gap-2">
+<span class="font-bold text-white text-sm truncate" id="summaryMovieName">Dune: Hành Tinh Cát 2</span>
+<span class="text-xs px-2 py-0.5 rounded bg-zinc-800 text-amber-400 border border-zinc-700">18:30</span>
+</div>
+<div class="flex items-center gap-3 text-xs text-zinc-400 mt-0.5">
+<span>Ghế: <strong class="text-rose-400" id="summarySeatsText">Chưa chọn ghế</strong></span>
+<span>•</span>
+<span>Combo: <strong class="text-amber-400" id="summaryComboText">0 món</strong></span>
+</div>
+</div>
+</div>
+<!-- Price & Checkout Button -->
+<div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+<!-- Live Animated Price -->
+<div class="text-right">
+<div class="text-[11px] text-zinc-400 uppercase tracking-wider font-semibold">Tạm Tính</div>
+<div class="flex items-baseline gap-1">
+<span class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-100 to-amber-200" id="totalPriceDisplay">
+              0
+            </span>
+<span class="text-rose-500 font-bold text-sm">đ</span>
+</div>
+</div>
+<!-- Checkout Trigger Button -->
+<button class="px-8 py-3.5 rounded-full bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-white font-bold text-sm tracking-wide shadow-xl shadow-rose-900/50 hover:shadow-rose-600/60 transition-all duration-300 transform active:scale-95 flex items-center gap-2 whitespace-nowrap" disabled="" id="btnCheckout" onclick="handleOpenCheckoutModal()">
+<span>THANH TOÁN</span>
+<i class="w-4 h-4" data-lucide="arrow-right"></i>
+</button>
+</div>
+</div>
+</aside>
+<!-- MODAL: E-TICKET QR MODAL (3D Flip Card Effect) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300" id="ticketModal">
+<div class="relative w-full max-w-md perspective-1000 transform transition-all scale-95 duration-300" id="ticketModalContent">
+<!-- Close Button -->
+<button class="absolute -top-12 right-0 w-9 h-9 rounded-full bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 flex items-center justify-center transition z-20" onclick="closeTicketModal()">
+<i class="w-5 h-5" data-lucide="x"></i>
+</button>
+<!-- Flip Card Inner Container -->
+<div class="relative w-full transform-style-3d transition-transform duration-700" id="ticketCardInner">
+<!-- FRONT OF TICKET -->
+<div class="glass-panel-elevated rounded-3xl overflow-hidden border border-white/20 shadow-2xl relative backface-hidden">
+<!-- Ticket Header Banner -->
+<div class="relative h-32 bg-gradient-to-r from-rose-950 via-zinc-900 to-amber-950 p-6 flex flex-col justify-between overflow-hidden">
+<div class="absolute -right-4 -bottom-4 w-32 h-32 bg-rose-600/20 rounded-full blur-xl"></div>
+<div class="flex items-center justify-between relative z-10">
+<span class="font-cinematic font-bold tracking-widest text-white text-lg flex items-center gap-2">
+<i class="w-5 h-5 text-rose-500" data-lucide="clapperboard"></i> CINELUXE PASS
+              </span>
+<span class="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2.5 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> ĐÃ XÁC NHẬN
+              </span>
+</div>
+<div class="text-xs text-zinc-300 relative z-10 flex items-center justify-between">
+<span>Mã Đặt Chỗ: <strong class="text-white tracking-widest" id="modalBookingId">CNX-89210</strong></span>
+<span class="text-zinc-400" id="modalBookingDate">28/10/2024</span>
+</div>
+</div>
+<!-- Perforated Cutout Line (Cinema Ticket Styling) -->
+<div class="relative w-full flex items-center justify-between px-0 -my-3 z-10">
+<div class="w-6 h-6 rounded-full bg-[#09090b] -ml-3 border-r border-white/10"></div>
+<div class="flex-1 border-b-2 border-dashed border-zinc-700/60 mx-2"></div>
+<div class="w-6 h-6 rounded-full bg-[#09090b] -mr-3 border-l border-white/10"></div>
+</div>
+<!-- Ticket Details -->
+<div class="p-6 pt-5 space-y-5">
+<div>
+<h4 class="text-xl font-bold text-white leading-tight" id="modalMovieTitle">Dune: Hành Tinh Cát 2</h4>
+<p class="text-xs text-zinc-400 mt-1" id="modalCinemaName">CineLuxe Landmark 81 • Phòng Chiếu 05</p>
+</div>
+<!-- Grid Specs -->
+<div class="grid grid-cols-3 gap-2 p-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-center">
+<div>
+<div class="text-[10px] uppercase text-zinc-400">Suất Chiếu</div>
+<div class="text-sm font-bold text-white mt-0.5" id="modalShowtime">18:30</div>
+</div>
+<div class="border-x border-zinc-800">
+<div class="text-[10px] uppercase text-zinc-400">Số Ghế</div>
+<div class="text-sm font-bold text-rose-500 mt-0.5" id="modalSeats">E5, E6</div>
+</div>
+<div>
+<div class="text-[10px] uppercase text-zinc-400">Định Dạng</div>
+<div class="text-sm font-bold text-amber-400 mt-0.5">IMAX 3D</div>
+</div>
+</div>
+<!-- QR Code Container with Laser Scanning Effect -->
+<div class="flex flex-col items-center justify-center p-4 rounded-2xl bg-white relative overflow-hidden shadow-inner group">
+<!-- Laser Scanner Line -->
+<div class="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent shadow-[0_0_12px_#e11d48] animate-laser-scan z-10"></div>
+<!-- QR Code SVG -->
+<div class="w-40 h-40 bg-zinc-100 flex items-center justify-center relative">
+<!-- SVG Vector QR code representation -->
+<svg class="w-full h-full" fill="none" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<!-- Outer Border & Corners -->
+<rect fill="white" height="100" width="100"></rect>
+<!-- Top Left Finder Pattern -->
+<rect fill="#09090b" height="24" rx="3" width="24" x="10" y="10"></rect>
+<rect fill="white" height="16" width="16" x="14" y="14"></rect>
+<rect fill="#09090b" height="8" width="8" x="18" y="18"></rect>
+<!-- Top Right Finder Pattern -->
+<rect fill="#09090b" height="24" rx="3" width="24" x="66" y="10"></rect>
+<rect fill="white" height="16" width="16" x="70" y="14"></rect>
+<rect fill="#09090b" height="8" width="8" x="74" y="18"></rect>
+<!-- Bottom Left Finder Pattern -->
+<rect fill="#09090b" height="24" rx="3" width="24" x="10" y="66"></rect>
+<rect fill="white" height="16" width="16" x="14" y="70"></rect>
+<rect fill="#09090b" height="8" width="8" x="18" y="74"></rect>
+<!-- Pixel Data Mockup -->
+<rect fill="#09090b" height="6" width="6" x="40" y="12"></rect>
+<rect fill="#09090b" height="6" width="6" x="52" y="12"></rect>
+<rect fill="#09090b" height="6" width="6" x="44" y="24"></rect>
+<rect fill="#09090b" height="6" width="6" x="12" y="44"></rect>
+<rect fill="#09090b" height="6" width="6" x="24" y="44"></rect>
+<rect fill="#e11d48" height="8" width="8" x="36" y="38"></rect>
+<rect fill="#09090b" height="8" width="8" x="48" y="40"></rect>
+<rect fill="#09090b" height="6" width="6" x="62" y="44"></rect>
+<rect fill="#09090b" height="8" width="8" x="78" y="44"></rect>
+<rect fill="#09090b" height="6" width="6" x="40" y="58"></rect>
+<rect fill="#09090b" height="6" width="6" x="54" y="54"></rect>
+<rect fill="#09090b" height="6" width="6" x="44" y="72"></rect>
+<rect fill="#09090b" height="10" width="10" x="64" y="68"></rect>
+<rect fill="#09090b" height="8" width="8" x="78" y="76"></rect>
+<rect fill="#09090b" height="6" width="6" x="54" y="80"></rect>
+</svg>
+</div>
+<p class="text-[11px] font-bold text-zinc-700 tracking-wider mt-2 uppercase">Quét mã tại cổng soát vé</p>
+</div>
+<!-- Total Paid & Flip Card Button -->
+<div class="flex items-center justify-between pt-2">
+<div>
+<span class="text-[11px] text-zinc-400">Tổng thanh toán:</span>
+<div class="text-lg font-extrabold text-amber-400" id="modalTotalPrice">250.000 đ</div>
+</div>
+<button class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-semibold text-zinc-200 flex items-center gap-2 transition" onclick="flipTicketCard()">
+<i class="w-4 h-4 text-rose-400" data-lucide="rotate-3d"></i>
+<span>Xem quy định rạp</span>
+</button>
+</div>
+</div>
+</div>
+<!-- BACK OF TICKET (Flipped view) -->
+<div class="glass-panel-elevated rounded-3xl p-6 border border-white/20 shadow-2xl absolute inset-0 backface-hidden rotate-y-180 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between border-b border-zinc-800 pb-4 mb-4">
+<h4 class="font-bold text-white text-base flex items-center gap-2">
+<i class="w-5 h-5 text-amber-400" data-lucide="info"></i>
+                Quy Định &amp; Lưu Ý Rạp Chiếu
+              </h4>
+<button class="text-xs text-rose-400 hover:underline" onclick="flipTicketCard()">Trở lại vé</button>
+</div>
+<ul class="text-xs text-zinc-300 space-y-3 leading-relaxed">
+<li class="flex items-start gap-2">
+<i class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" data-lucide="check-circle"></i>
+<span>Vui lòng đến trước giờ chiếu ít nhất <strong>15 phút</strong> để nhận bắp nước và ổn định vị trí.</span>
+</li>
+<li class="flex items-start gap-2">
+<i class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" data-lucide="check-circle"></i>
+<span>Xuất trình vé điện tử QR trực tiếp trên điện thoại tại cổng quét tự động.</span>
+</li>
+<li class="flex items-start gap-2">
+<i class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" data-lucide="alert-triangle"></i>
+<span>Phim có gắn nhãn giới hạn độ tuổi. Khán giả vui lòng mang theo CCCD đối chiếu khi có yêu cầu.</span>
+</li>
+<li class="flex items-start gap-2">
+<i class="w-4 h-4 text-rose-400 shrink-0 mt-0.5" data-lucide="x-circle"></i>
+<span>Không mang đồ ăn, thức uống ngoài quy định vào phòng chiếu.</span>
+</li>
+</ul>
+</div>
+<div class="pt-4 border-t border-zinc-800 flex items-center justify-between">
+<button class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold text-xs text-white transition flex items-center justify-center gap-2" onclick="downloadTicketMock()">
+<i class="w-4 h-4" data-lucide="download"></i> Lưu Vé Vào Điện Thoại (PDF/Apple Wallet)
+            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- MY TICKETS DRAWER (Side sheet) -->
+<div class="fixed inset-0 z-50 overflow-hidden pointer-events-none transition-all duration-300" id="ticketsDrawer">
+<div class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="drawerBackdrop" onclick="closeMyTicketsDrawer()"></div>
+<div class="absolute inset-y-0 right-0 max-w-full flex pl-10 pointer-events-none">
+<div class="w-screen max-w-md transform translate-x-full transition-transform duration-300 ease-in-out pointer-events-auto glass-panel-elevated border-l border-white/10 flex flex-col justify-between" id="drawerPanel">
+<!-- Drawer Header -->
+<div class="p-6 border-b border-zinc-800 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<i class="w-5 h-5 text-rose-500" data-lucide="ticket"></i>
+<h3 class="font-bold text-white text-lg">Vé Của Tôi</h3>
+</div>
+<button class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800" onclick="closeMyTicketsDrawer()">
+<i class="w-5 h-5" data-lucide="x"></i>
+</button>
+</div>
+<!-- Drawer Content (List of booked tickets) -->
+<div class="flex-1 overflow-y-auto p-6 space-y-4" id="bookedTicketsList">
+<!-- Active Ticket Card Example -->
+<div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-700/80 space-y-3 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-24 h-24 bg-rose-600/10 rounded-full blur-xl pointer-events-none"></div>
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">HÔM NAY</span>
+<h4 class="font-bold text-white text-sm mt-1">Dune: Hành Tinh Cát 2</h4>
+<p class="text-[11px] text-zinc-400">18:30 • 28/10/2024 • Rạp 05</p>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-rose-400">Ghế E5, E6</span>
+</div>
+</div>
+<div class="pt-3 border-t border-zinc-800/80 flex items-center justify-between">
+<span class="text-xs font-bold text-white">250.000 đ</span>
+<button class="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1" onclick="openTicketModalWithData('Dune: Hành Tinh Cát 2', 'E5, E6', '250.000 đ', '18:30')">
+<span>Xem Mã QR</span>
+<i class="w-3.5 h-3.5" data-lucide="qr-code"></i>
+</button>
+</div>
+</div>
+</div>
+<!-- Drawer Footer -->
+<div class="p-6 border-t border-zinc-800 bg-zinc-950/60">
+<p class="text-[11px] text-zinc-400 text-center">Cần hỗ trợ đổi/hoàn vé? Liên hệ hotline <span class="text-rose-400 font-bold">1900 6868</span></p>
+</div>
+</div>
+</div>
+</div>
+<!-- TRAILER VIDEO MODAL -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300" id="trailerModal">
+<div class="relative w-full max-w-4xl bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
+<div class="flex items-center justify-between p-4 border-b border-zinc-800">
+<h4 class="font-bold text-white text-base" id="trailerModalTitle">Xem Trailer Chính Thức</h4>
+<button class="p-1 rounded-lg text-zinc-400 hover:text-white" onclick="closeTrailerModal()">
+<i class="w-5 h-5" data-lucide="x"></i>
+</button>
+</div>
+<div class="aspect-video w-full bg-black relative flex items-center justify-center">
+<!-- Mock Video Player Frame -->
+<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" class="w-full h-full" frameborder="0" id="trailerIframe" src="" title="YouTube video player"></iframe>
+</div>
+</div>
+</div>
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div class="fixed top-24 right-6 z-50 space-y-3 pointer-events-none" id="toastContainer"></div>
+<!-- JAVASCRIPT LOGIC -->
+<script>
+    // --- 1. DATA STATE ---
+    const MOVIES_DATA = [
+      {
+        id: 1,
+        title: "Dune: Hành Tinh Cát 2",
+        format: "IMAX 3D Laser",
+        tag: "T16",
+        duration: "166 Phút",
+        rating: 8.9,
+        genre: "Khoa Học Viễn Tưởng",
+        status: "now",
+        poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1920&q=85",
+        desc: "Paul Atreides hợp lực cùng Chani và tộc người Fremen để trả thù những kẻ đã hủy diệt gia tộc mình. Đứng trước sự lựa chọn giữa tình yêu và vận mệnh vũ trụ.",
+        trailerUrl: "https://www.youtube.com/embed/Way9Dexny3w?autoplay=1"
+      },
+      {
+        id: 2,
+        title: "Oppenheimer",
+        format: "2D Phụ Đề",
+        tag: "T18",
+        duration: "180 Phút",
+        rating: 9.0,
+        genre: "Tiểu Sử, Lịch Sử",
+        status: "now",
+        poster: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=85",
+        desc: "Câu chuyện về nhà vật lý lý thuyết J. Robert Oppenheimer, người đứng đầu Dự án Manhattan khai sinh ra quả bom nguyên tử đầu tiên.",
+        trailerUrl: "https://www.youtube.com/embed/uYPbbksJxIg?autoplay=1"
+      },
+      {
+        id: 3,
+        title: "Deadpool & Wolverine",
+        format: "3D Phụ Đề",
+        tag: "T18",
+        duration: "128 Phút",
+        rating: 8.3,
+        genre: "Hành Động, Hài Hước",
+        status: "now",
+        poster: "https://images.unsplash.com/photo-1509281373149-e957c6296406?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=85",
+        desc: "Cơ quan Quản lý Phương sai Thời gian lôi kéo Wade Wilson ra khỏi cuộc sống yên bình để tham gia nhiệm vụ giải cứu đa vũ trụ cùng Wolverine.",
+        trailerUrl: "https://www.youtube.com/embed/73_1biulkYk?autoplay=1"
+      },
+      {
+        id: 4,
+        title: "Interstellar: Tái Khởi Chiếu",
+        format: "IMAX Laser",
+        tag: "P",
+        duration: "169 Phút",
+        rating: 9.2,
+        genre: "Phiêu Lưu, Viễn Tưởng",
+        status: "now",
+        poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1920&q=85",
+        desc: "Một nhóm thám hiểm không gian du hành qua lỗ sâu gần sao Thổ nhằm tìm kiếm hành tinh mới có thể nuôi sống nhân loại.",
+        trailerUrl: "https://www.youtube.com/embed/zSWdZVtXT7E?autoplay=1"
+      },
+      {
+        id: 5,
+        title: "Godzilla x Kong: Đế Chế Mới",
+        format: "3D Dolby Atmos",
+        tag: "K",
+        duration: "115 Phút",
+        rating: 7.8,
+        genre: "Hành Động, Quái Vật",
+        status: "now",
+        poster: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1920&q=85",
+        desc: "Hai quái thú huyền thoại Godzilla và Kong buộc phải liên minh chống lại mối đe dọa khổng lồ chưa từng thấy ẩn sâu trong Trái Đất Rỗng.",
+        trailerUrl: "https://www.youtube.com/embed/Way9Dexny3w?autoplay=1"
+      },
+      {
+        id: 6,
+        title: "Kẻ Trộm Mặt Trời",
+        format: "2D Lồng Tiếng",
+        tag: "P",
+        duration: "102 Phút",
+        rating: 8.0,
+        genre: "Hoạt Hình, Gia Đình",
+        status: "now",
+        poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1920&q=85",
+        desc: "Hành trình hài hước và ấm áp của những chú sóc đi tìm lại vầng hào quang cho khu rừng ma thuật.",
+        trailerUrl: "https://www.youtube.com/embed/Way9Dexny3w?autoplay=1"
+      },
+      {
+        id: 7,
+        title: "Gladiator II",
+        format: "IMAX 2D",
+        tag: "T18",
+        duration: "150 Phút",
+        rating: 8.7,
+        genre: "Sử Thi, Hành Động",
+        status: "soon",
+        poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=85",
+        desc: "Sau nhiều năm, Lucius con trai của Lucilla giờ đây bước vào Đấu trường La Mã lịch sử nhằm đòi lại công lý cho danh dự gia tộc.",
+        trailerUrl: "https://www.youtube.com/embed/Way9Dexny3w?autoplay=1"
+      },
+      {
+        id: 8,
+        title: "Avatar 3: Tro Tàn & Lửa",
+        format: "IMAX 3D Laser",
+        tag: "P",
+        duration: "192 Phút",
+        rating: 9.4,
+        genre: "Khoa Học Viễn Tưởng",
+        status: "soon",
+        poster: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+        backdrop: "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1920&q=85",
+        desc: "James Cameron đưa khán giả khám phá tộc người Ash People hiếu chiến thuộc hành tinh Pandora hùng vĩ.",
+        trailerUrl: "https://www.youtube.com/embed/Way9Dexny3w?autoplay=1"
+      }
+    ];
+
+    const COMBOS_DATA = [
+      {
+        id: "c1",
+        name: "Combo Solo Star",
+        desc: "1 Bắp ngọt lớn + 1 Nước ngọt cỡ lớn (Coke/Sprite)",
+        price: 85000,
+        img: "🍿🥤"
+      },
+      {
+        id: "c2",
+        name: "Combo Couple Gold",
+        desc: "1 Bắp phô mai đặc biệt + 2 Nước ngọt + 1 Snack khoai tây",
+        price: 135000,
+        img: "🍿🥤🥤"
+      },
+      {
+        id: "c3",
+        name: "CineLuxe VIP Box",
+        desc: "2 Bắp caramel + 2 Trà sữa trân châu + 1 Xúc xích nướng",
+        price: 195000,
+        img: "✨🍿🌭"
+      }
+    ];
+
+    // Current Booking State
+    let currentSelectedMovie = MOVIES_DATA[0];
+    let currentShowtime = "18:30";
+    let selectedSeats = new Set(); // Store seat IDs (e.g. 'E5', 'E6')
+    let comboQuantities = { c1: 0, c2: 0, c3: 0 };
+    let currentDisplayedPrice = 0;
+
+    // --- 2. INITIALIZATION ---
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      renderMovieGrid("now");
+      renderSeatMatrix();
+      renderCombos();
+      updateCheckoutBar();
+      loadBookedTicketsFromStorage();
+
+      // Keyboard Shortcut for search focus
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          document.getElementById('movieSearchInput').focus();
+        }
+      });
+
+      // Search input live filtering
+      const searchInput = document.getElementById('movieSearchInput');
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.movie-card');
+        cards.forEach(card => {
+          const title = card.getAttribute('data-title').toLowerCase();
+          if (title.includes(query)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // --- 3. MOVIE GRID RENDERING & TABS ---
+    function renderMovieGrid(filter = "now") {
+      const grid = document.getElementById("moviesGrid");
+      grid.innerHTML = "";
+
+      const filtered = MOVIES_DATA.filter(m => filter === 'all' || m.status === filter);
+
+      filtered.forEach((movie, index) => {
+        const card = document.createElement("div");
+        card.className = "movie-card group relative rounded-2xl overflow-hidden glass-panel border border-zinc-800/80 flex flex-col transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-rose-500/50 hover:shadow-2xl hover:shadow-rose-950/40 cursor-pointer";
+        card.setAttribute("data-title", movie.title);
+
+        card.innerHTML = `
+          <!-- Poster Image with Badge -->
+          <div class="relative aspect-[2/3] w-full overflow-hidden bg-zinc-900">
+            <img 
+              src="${movie.poster}" 
+              alt="${movie.title}" 
+              class="w-full h-full object-cover object-center transform group-hover:scale-108 transition-transform duration-500"
+              loading="lazy"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-90 group-hover:opacity-75 transition-opacity"></div>
+            
+            <!-- Badges -->
+            <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-600 text-white shadow-md">${movie.tag}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-900/90 text-amber-300 border border-amber-500/30">${movie.format}</span>
+            </div>
+
+            <!-- Rating badge -->
+            <div class="absolute top-3 right-3 px-2 py-1 rounded-lg bg-zinc-900/90 border border-zinc-700/80 text-amber-400 text-xs font-bold flex items-center gap-1 shadow-md">
+              <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i>
+              <span>${movie.rating}</span>
+            </div>
+
+            <!-- Slide Up Buy Ticket Overlay on Hover -->
+            <div class="absolute inset-x-0 bottom-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center justify-center">
+              <button 
+                onclick="event.stopPropagation(); selectMovieForBooking(${movie.id - 1})"
+                class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold tracking-wide shadow-lg shadow-rose-900/50 flex items-center justify-center gap-2"
+              >
+                <i data-lucide="ticket" class="w-4 h-4"></i>
+                <span>CHỌN SUẤT CHIẾU</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card Content -->
+          <div class="p-4 flex-1 flex flex-col justify-between">
+            <div>
+              <div class="text-[11px] text-zinc-400 mb-1 flex items-center justify-between">
+                <span>${movie.genre}</span>
+                <span>${movie.duration}</span>
+              </div>
+              <h4 class="font-bold text-white text-base leading-snug group-hover:text-rose-400 transition-colors line-clamp-1">
+                ${movie.title}
+              </h4>
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400">
+              <span class="text-zinc-500">Chiếu hôm nay</span>
+              <span class="text-rose-500 font-semibold group-hover:underline flex items-center gap-0.5">
+                Đặt vé <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          selectMovieForBooking(movie.id - 1);
+        });
+
+        grid.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function switchTab(type) {
+      const tabNow = document.getElementById('tabNowShowing');
+      const tabSoon = document.getElementById('tabComingSoon');
+
+      if (type === 'now') {
+        tabNow.className = "tab-btn px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 bg-rose-600 text-white shadow-md shadow-rose-900/40";
+        tabSoon.className = "tab-btn px-5 py-2 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white transition-all duration-300";
+        renderMovieGrid('now');
+      } else {
+        tabSoon.className = "tab-btn px-5 py-2 rounded-lg text-xs font-bold transition-all duration-300 bg-rose-600 text-white shadow-md shadow-rose-900/40";
+        tabNow.className = "tab-btn px-5 py-2 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white transition-all duration-300";
+        renderMovieGrid('soon');
+      }
+    }
+
+    // --- 4. SELECT MOVIE FOR BOOKING FLOW ---
+    function selectMovieForBooking(index) {
+      currentSelectedMovie = MOVIES_DATA[index] || MOVIES_DATA[0];
+
+      // Update Booking Header Details
+      document.getElementById('bookingMovieTitle').textContent = currentSelectedMovie.title;
+      document.getElementById('bookingFormat').textContent = currentSelectedMovie.format;
+      document.getElementById('summaryMovieName').textContent = currentSelectedMovie.title;
+      document.getElementById('summaryThumb').src = currentSelectedMovie.poster;
+
+      // Update Hero Spotlight if requested
+      document.getElementById('heroTitle').textContent = currentSelectedMovie.title.toUpperCase();
+      document.getElementById('heroDesc').textContent = currentSelectedMovie.desc;
+      document.getElementById('heroBackdrop').src = currentSelectedMovie.backdrop;
+
+      // Reset Seat selection for new movie
+      selectedSeats.clear();
+      renderSeatMatrix();
+      updateCheckoutBar();
+
+      showToast(`Đã chọn phim: ${currentSelectedMovie.title}`, "info");
+
+      // Smooth scroll to booking section
+      const section = document.getElementById('bookingSection');
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function selectShowtime(btn, time) {
+      document.querySelectorAll('.showtime-chip').forEach(el => {
+        el.className = "showtime-chip px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 bg-zinc-800 border border-zinc-700 hover:border-rose-500/40";
+      });
+      btn.className = "showtime-chip px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-md shadow-rose-900/30";
+      currentShowtime = time;
+      showToast(`Đã đổi sang suất chiếu: ${time}`, "info");
+    }
+
+    // --- 5. SEAT MAP MATRIX GENERATOR (Rows A-H, Cols 1-10) ---
+    function renderSeatMatrix() {
+      const container = document.getElementById('seatMatrix');
+      container.innerHTML = "";
+
+      const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      
+      // Seed some random booked seats for realism
+      const preBooked = new Set(['B3', 'B4', 'D5', 'D6', 'E7', 'E8', 'F4', 'G2', 'G3']);
+
+      rows.forEach(rowLetter => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = "flex items-center gap-2 sm:gap-3";
+
+        // Row label (Left)
+        const rowLabel = document.createElement('div');
+        rowLabel.className = "w-6 text-center text-xs font-bold text-zinc-500";
+        rowLabel.textContent = rowLetter;
+        rowDiv.appendChild(rowLabel);
+
+        // Seat columns container
+        const seatsGroup = document.createElement('div');
+        seatsGroup.className = "flex items-center gap-1.5 sm:gap-2.5";
+
+        // Check Row Type
+        // A, B, C: Normal (95k)
+        // D, E, F: VIP (125k)
+        // G, H: Sweetbox or VIP
+        const isVIP = ['D', 'E', 'F'].includes(rowLetter);
+        const isSweetbox = ['H'].includes(rowLetter);
+
+        for (let col = 1; col <= 10; col++) {
+          const seatId = `${rowLetter}${col}`;
+          const isBooked = preBooked.has(seatId);
+          const isSelected = selectedSeats.has(seatId);
+
+          const seatBtn = document.createElement('button');
+          seatBtn.setAttribute('data-seat-id', seatId);
+
+          if (isSweetbox) {
+            // Render double seat pairing (1-2, 3-4, 5-6, 7-8, 9-10)
+            if (col % 2 !== 0) {
+              const pairId = `${seatId}-${rowLetter}${col+1}`;
+              seatBtn.className = `seat w-14 sm:w-16 h-7 rounded-t-xl text-[10px] font-bold flex items-center justify-center transition-all ${
+                isSelected 
+                  ? 'seat-active' 
+                  : isBooked 
+                    ? 'seat-booked' 
+                    : 'bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-pink-500/50 text-pink-300 hover:border-pink-400'
+              }`;
+              seatBtn.textContent = `♥ ${col}-${col+1}`;
+              seatBtn.onclick = () => toggleSeat(seatId, 240000, true);
+              seatsGroup.appendChild(seatBtn);
+            }
+            continue; // Skip next column as handled in pair
+          }
+
+          // Normal & VIP Seat element
+          let baseClass = "seat w-6 sm:w-8 h-7 rounded-t-lg text-[10px] font-semibold flex items-center justify-center ";
+          let price = 95000;
+
+          if (isSelected) {
+            baseClass += "seat-active";
+          } else if (isBooked) {
+            baseClass += "seat-booked";
+          } else if (isVIP) {
+            baseClass += "bg-zinc-800 border-2 border-amber-500/80 text-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.25)] hover:bg-zinc-700";
+            price = 125000;
+          } else {
+            baseClass += "bg-zinc-700/80 border border-zinc-600 text-zinc-300 hover:bg-zinc-600";
+          }
+
+          seatBtn.className = baseClass;
+          seatBtn.textContent = col;
+
+          if (!isBooked) {
+            seatBtn.onclick = () => toggleSeat(seatId, price, false);
+          } else {
+            seatBtn.disabled = true;
+          }
+
+          // Aisle Gap after seat 3 and 7
+          if (col === 4 || col === 8) {
+            const aisle = document.createElement('div');
+            aisle.className = "w-3 sm:w-5";
+            seatsGroup.appendChild(aisle);
+          }
+
+          seatsGroup.appendChild(seatBtn);
+        }
+
+        rowDiv.appendChild(seatsGroup);
+
+        // Row label (Right)
+        const rowLabelRight = document.createElement('div');
+        rowLabelRight.className = "w-6 text-center text-xs font-bold text-zinc-500";
+        rowLabelRight.textContent = rowLetter;
+        rowDiv.appendChild(rowLabelRight);
+
+        container.appendChild(rowDiv);
+      });
+    }
+
+    function toggleSeat(seatId, price, isPair) {
+      if (selectedSeats.has(seatId)) {
+        selectedSeats.delete(seatId);
+        showToast(`Đã hủy chọn ghế ${seatId}`, "info");
+      } else {
+        if (selectedSeats.size >= 8) {
+          showToast("Mỗi giao dịch đặt tối đa 8 ghế!", "warning");
+          return;
+        }
+        selectedSeats.add(seatId);
+        showToast(`Đã chọn ghế ${seatId} (${formatVND(price)})`, "success");
+      }
+
+      renderSeatMatrix();
+      updateCheckoutBar();
+    }
+
+    // --- 6. POPCORN & COMBOS SELECTION ---
+    function renderCombos() {
+      const container = document.getElementById('comboListContainer');
+      container.innerHTML = "";
+
+      COMBOS_DATA.forEach(combo => {
+        const qty = comboQuantities[combo.id] || 0;
+        const card = document.createElement('div');
+        card.className = "p-4 rounded-2xl bg-zinc-900/70 border border-zinc-800 hover:border-zinc-700 flex items-center justify-between gap-3 transition-all";
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="text-3xl select-none">${combo.img}</div>
+            <div>
+              <div class="text-sm font-bold text-white">${combo.name}</div>
+              <div class="text-[11px] text-zinc-400 line-clamp-1">${combo.desc}</div>
+              <div class="text-xs font-bold text-amber-400 mt-1">${formatVND(combo.price)}</div>
+            </div>
+          </div>
+          <!-- Plus / Minus Stepper -->
+          <div class="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg p-1">
+            <button onclick="changeComboQty('${combo.id}', -1)" class="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition">
+              <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+            </button>
+            <span class="w-5 text-center text-xs font-bold text-white" id="qty-${combo.id}">${qty}</span>
+            <button onclick="changeComboQty('${combo.id}', 1)" class="w-6 h-6 rounded flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function changeComboQty(comboId, delta) {
+      const current = comboQuantities[comboId] || 0;
+      const next = Math.max(0, current + delta);
+      comboQuantities[comboId] = next;
+
+      const span = document.getElementById(`qty-${comboId}`);
+      if (span) span.textContent = next;
+
+      updateCheckoutBar();
+    }
+
+    // --- 7. CHECKOUT BAR CALCULATOR & ANIMATED NUMBER COUNTER ---
+    function calculateTotal() {
+      let seatTotal = 0;
+      selectedSeats.forEach(seatId => {
+        const row = seatId.charAt(0);
+        if (['A', 'B', 'C'].includes(row)) seatTotal += 95000;
+        else if (['D', 'E', 'F'].includes(row)) seatTotal += 125000;
+        else if (['H'].includes(row)) seatTotal += 240000;
+        else seatTotal += 125000;
+      });
+
+      let comboTotal = 0;
+      COMBOS_DATA.forEach(c => {
+        comboTotal += (comboQuantities[c.id] || 0) * c.price;
+      });
+
+      return {
+        seatTotal,
+        comboTotal,
+        grandTotal: seatTotal + comboTotal,
+        seatCount: selectedSeats.size,
+        comboCount: Object.values(comboQuantities).reduce((a, b) => a + b, 0)
+      };
+    }
+
+    function updateCheckoutBar() {
+      const totals = calculateTotal();
+
+      // Update Summary Text
+      const seatsTextEl = document.getElementById('summarySeatsText');
+      if (selectedSeats.size === 0) {
+        seatsTextEl.textContent = "Chưa chọn ghế";
+        seatsTextEl.className = "text-zinc-500 font-normal";
+      } else {
+        const sorted = Array.from(selectedSeats).sort().join(", ");
+        seatsTextEl.textContent = sorted;
+        seatsTextEl.className = "text-rose-400 font-bold";
+      }
+
+      // Combo count text
+      document.getElementById('summaryComboText').textContent = totals.comboCount > 0 ? `${totals.comboCount} phần` : "0 món";
+
+      // Animate Price Count Up / Down
+      animateValue(document.getElementById('totalPriceDisplay'), currentDisplayedPrice, totals.grandTotal, 400);
+      currentDisplayedPrice = totals.grandTotal;
+
+      // Enable/Disable Checkout Button
+      const checkoutBtn = document.getElementById('btnCheckout');
+      if (totals.seatCount > 0) {
+        checkoutBtn.removeAttribute('disabled');
+      } else {
+        checkoutBtn.setAttribute('disabled', 'true');
+      }
+    }
+
+    // Smooth Number Counting Animation
+    function animateValue(element, start, end, duration) {
+      if (start === end) {
+        element.textContent = formatNumber(end);
+        return;
+      }
+      const range = end - start;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const current = Math.floor(start + range * easeOutQuad(progress));
+
+        element.textContent = formatNumber(current);
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          element.textContent = formatNumber(end);
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    function easeOutQuad(x) {
+      return 1 - (1 - x) * (1 - x);
+    }
+
+    function formatNumber(num) {
+      return new Intl.NumberFormat('vi-VN').format(num);
+    }
+
+    function formatVND(num) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
+    }
+
+    // --- 8. E-TICKET QR MODAL & CARD FLIP ---
+    function handleOpenCheckoutModal() {
+      const totals = calculateTotal();
+      if (totals.seatCount === 0) {
+        showToast("Vui lòng chọn ghế trước khi thanh toán!", "warning");
+        return;
+      }
+
+      const seatsArr = Array.from(selectedSeats).sort().join(", ");
+      const bookingId = "CNX-" + Math.floor(10000 + Math.random() * 90000);
+
+      // Populate Modal Fields
+      document.getElementById('modalBookingId').textContent = bookingId;
+      document.getElementById('modalMovieTitle').textContent = currentSelectedMovie.title;
+      document.getElementById('modalShowtime').textContent = currentShowtime;
+      document.getElementById('modalSeats').textContent = seatsArr;
+      document.getElementById('modalTotalPrice').textContent = formatVND(totals.grandTotal);
+
+      // Save to localStorage
+      saveTicketToLocalStorage({
+        id: bookingId,
+        movie: currentSelectedMovie.title,
+        showtime: currentShowtime,
+        date: "28/10/2024",
+        seats: seatsArr,
+        total: formatVND(totals.grandTotal),
+        hall: "Phòng 05 (VIP Laser)"
+      });
+
+      // Show Modal with animation
+      const modal = document.getElementById('ticketModal');
+      const content = document.getElementById('ticketModalContent');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      content.classList.remove('scale-95');
+      content.classList.add('scale-100');
+
+      showToast("Thanh toán thành công! Vé đã sẵn sàng.", "success");
+    }
+
+    function closeTicketModal() {
+      const modal = document.getElementById('ticketModal');
+      const content = document.getElementById('ticketModalContent');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+      content.classList.remove('scale-100');
+      content.classList.add('scale-95');
+      
+      // Reset flip
+      document.getElementById('ticketCardInner').classList.remove('rotate-y-180');
+    }
+
+    let isFlipped = false;
+    function flipTicketCard() {
+      const inner = document.getElementById('ticketCardInner');
+      isFlipped = !isFlipped;
+      if (isFlipped) {
+        inner.classList.add('rotate-y-180');
+      } else {
+        inner.classList.remove('rotate-y-180');
+      }
+    }
+
+    function downloadTicketMock() {
+      showToast("Đang tạo tệp vé PDF / Wallet Pass...", "info");
+      setTimeout(() => {
+        showToast("Đã tải vé điện tử về thiết bị của bạn!", "success");
+      }, 1200);
+    }
+
+    // --- 9. MY TICKETS DRAWER & STORAGE ---
+    const btnOpenMyTickets = document.getElementById('btnOpenMyTickets');
+    btnOpenMyTickets.addEventListener('click', openMyTicketsDrawer);
+
+    function openMyTicketsDrawer() {
+      const drawer = document.getElementById('ticketsDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+      const panel = document.getElementById('drawerPanel');
+
+      drawer.classList.remove('pointer-events-none');
+      backdrop.classList.remove('opacity-0');
+      panel.classList.remove('translate-x-full');
+    }
+
+    function closeMyTicketsDrawer() {
+      const drawer = document.getElementById('ticketsDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+      const panel = document.getElementById('drawerPanel');
+
+      backdrop.classList.add('opacity-0');
+      panel.classList.add('translate-x-full');
+      setTimeout(() => {
+        drawer.classList.add('pointer-events-none');
+      }, 300);
+    }
+
+    function saveTicketToLocalStorage(ticket) {
+      let tickets = [];
+      try {
+        tickets = JSON.parse(localStorage.getItem('cineluxe_tickets')) || [];
+      } catch (e) {
+        tickets = [];
+      }
+      tickets.unshift(ticket);
+      localStorage.setItem('cineluxe_tickets', JSON.stringify(tickets));
+      loadBookedTicketsFromStorage();
+    }
+
+    function loadBookedTicketsFromStorage() {
+      let tickets = [];
+      try {
+        tickets = JSON.parse(localStorage.getItem('cineluxe_tickets')) || [];
+      } catch (e) {
+        tickets = [];
+      }
+
+      // Default mock ticket if empty
+      if (tickets.length === 0) {
+        tickets = [{
+          id: "CNX-89210",
+          movie: "Dune: Hành Tinh Cát 2",
+          showtime: "18:30",
+          date: "28/10/2024",
+          seats: "E5, E6",
+          total: "250.000 đ",
+          hall: "Phòng 05 (VIP Laser)"
+        }];
+      }
+
+      document.getElementById('ticketBadgeCount').textContent = tickets.length;
+
+      const listContainer = document.getElementById('bookedTicketsList');
+      listContainer.innerHTML = "";
+
+      tickets.forEach(ticket => {
+        const item = document.createElement('div');
+        item.className = "p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-3 relative overflow-hidden group hover:border-zinc-700 transition";
+        item.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">VÉ HIỆU LỰC</span>
+              <h4 class="font-bold text-white text-sm mt-1">${ticket.movie}</h4>
+              <p class="text-[11px] text-zinc-400">${ticket.showtime} • ${ticket.date} • ${ticket.hall}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-bold text-rose-400">${ticket.seats}</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-zinc-800/80 flex items-center justify-between">
+            <span class="text-xs font-bold text-white">${ticket.total}</span>
+            <button onclick="openTicketModalWithData('${ticket.movie}', '${ticket.seats}', '${ticket.total}', '${ticket.showtime}')" class="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1">
+              <span>Xem QR</span>
+              <i data-lucide="qr-code" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+
+      lucide.createIcons();
+    }
+
+    function openTicketModalWithData(movie, seats, total, showtime) {
+      document.getElementById('modalMovieTitle').textContent = movie;
+      document.getElementById('modalSeats').textContent = seats;
+      document.getElementById('modalTotalPrice').textContent = total;
+      document.getElementById('modalShowtime').textContent = showtime;
+
+      closeMyTicketsDrawer();
+
+      const modal = document.getElementById('ticketModal');
+      const content = document.getElementById('ticketModalContent');
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      content.classList.remove('scale-95');
+      content.classList.add('scale-100');
+    }
+
+    // --- 10. TRAILER MODAL ---
+    function openTrailerModal(movieTitle) {
+      const modal = document.getElementById('trailerModal');
+      const iframe = document.getElementById('trailerIframe');
+      const title = document.getElementById('trailerModalTitle');
+
+      title.textContent = `Trailer: ${currentSelectedMovie.title}`;
+      iframe.src = currentSelectedMovie.trailerUrl;
+
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+    }
+
+    function closeTrailerModal() {
+      const modal = document.getElementById('trailerModal');
+      const iframe = document.getElementById('trailerIframe');
+      iframe.src = "";
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+
+    // --- 11. TOAST NOTIFICATIONS HELPER ---
+    function showToast(message, type = "info") {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+
+      let icon = "info";
+      let colorClass = "border-zinc-700 bg-zinc-900/95 text-zinc-200";
+
+      if (type === "success") {
+        icon = "check-circle-2";
+        colorClass = "border-emerald-500/50 bg-zinc-900/95 text-emerald-300";
+      } else if (type === "warning") {
+        icon = "alert-circle";
+        colorClass = "border-amber-500/50 bg-zinc-900/95 text-amber-300";
+      }
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium transform transition-all duration-300 translate-x-10 opacity-0 ${colorClass}`;
+      toast.innerHTML = `
+        <i data-lucide="${icon}" class="w-4 h-4 shrink-0"></i>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      // Entrance animation
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-x-10', 'opacity-0');
+      });
+
+      // Exit
+      setTimeout(() => {
+        toast.classList.add('translate-x-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
